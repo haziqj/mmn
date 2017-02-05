@@ -6,6 +6,8 @@ The Brunei Legislative Council is known as the *Majlis Mesyuarat Negara* (MMN) i
 
 Official record of debates (Hansards) are available for all sessions, from the years 2006 to 2016. They are in PDF format and in the Malay language. Council members may have be different year to year.
 
+http://www.majlis-mesyuarat.gov.bn/JMM%20Site%20Pages/Laporan.aspx
+
 ## Aim
 
 To publish a write-up of both the statistical methods and findings of the following research questions:
