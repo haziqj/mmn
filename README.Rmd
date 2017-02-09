@@ -13,7 +13,7 @@ library(readtext)  # devtools::install_github("kbenoit/readtext")
 
 *Document last updated: `r Sys.Date()`*
 
-The Legislative Council of Brunei is known as the *Majlis Mesyuarat Negara* (MMN) in Malay. The MMN holds its sitting annually in March. The MMN was established in 1959 by virtue of Article 23 of the Brunei constitution. Having been suspended in 1983, the MMN was reestablished in 2004. The MMN has been instrumental in passing legislations and also in considering and approving state budgets and revenue estimates. 
+The Legislative Council of Brunei is known as the *Majlis Mesyuarat Negara* (MMN) in Malay. The MMN holds its sitting annually in March. The MMN was established in 1959 by virtue of Article 23 of the Brunei constitution. Having been suspended in 1983, the MMN was reestablished in 2004. The MMN has been instrumental in passing legislations and also in considering and approving state budgets and revenue estimates. Here's a [blogpost](http://bruneiresources.blogspot.co.uk/2009/03/history-of-brunei-legislative-council.html) on the history of the council by Rozan Yunos.
 
 ## Aim
 
@@ -43,9 +43,9 @@ Whatever the analysis, it is important to note that we have data over time, and 
 
 Where relevant, these will be linked to the issues section.
 
-1. Automatic data retrieval and pre-processing. See #2.
+1. Automatic data retrieval and pre-processing. See [#2](/../../issues/2).
 2. Decide on methodology(ies). If using supervised learning, need subject matter experts to help rank texts.
-3. Compile a list of relevant Malay stop words. See #1.
+3. Compile a list of relevant Malay stop words. See [#1](/../../issues/1).
 
 ## Example using data from one session meeting
 
