@@ -3,7 +3,7 @@ A quantitative text analysis of Brunei's Legislative Council meeting speeches
 
 *Document last updated: 2017-02-09*
 
-The Legislative Council of Brunei is known as the *Majlis Mesyuarat Negara* (MMN) in Malay. The MMN holds its sitting annually in March. The MMN was established in 1959 by virtue of Article 23 of the Brunei constitution. Having been suspended in 1983, the MMN was reestablished in 2004. The MMN has been instrumental in passing legislations and also in considering and approving state budgets and revenue estimates.
+The Legislative Council of Brunei is known as the *Majlis Mesyuarat Negara* (MMN) in Malay. The MMN holds its sitting annually in March. The MMN was established in 1959 by virtue of Article 23 of the Brunei constitution. Having been suspended in 1983, the MMN was reestablished in 2004. The MMN has been instrumental in passing legislations and also in considering and approving state budgets and revenue estimates. Here's a [blogpost](http://bruneiresources.blogspot.co.uk/2009/03/history-of-brunei-legislative-council.html) on the history of the council by Rozan Yunos.
 
 Aim
 ---
@@ -36,9 +36,9 @@ Things to do
 
 Where relevant, these will be linked to the issues section.
 
-1.  Automatic data retrieval and pre-processing. See \#2.
+1.  Automatic data retrieval and pre-processing. See [\#2](/../../issues/2).
 2.  Decide on methodology(ies). If using supervised learning, need subject matter experts to help rank texts.
-3.  Compile a list of relevant Malay stop words. See \#1.
+3.  Compile a list of relevant Malay stop words. See [\#1](/../../issues/1).
 
 Example using data from one session meeting
 -------------------------------------------
@@ -127,7 +127,7 @@ summary(speechCorp)
     ##                                                        Yang Berhormat Yang Di-Pertua
     ## 
     ## Source:  /Users/haziqjamil/Desktop/GitHub/mmn/* on x86_64 by haziqjamil
-    ## Created: Thu Feb  9 12:11:24 2017
+    ## Created: Thu Feb  9 12:15:20 2017
     ## Notes:
 
 For our purposes,
