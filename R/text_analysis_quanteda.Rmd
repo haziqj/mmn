@@ -1,0 +1,304 @@
+---
+title: "Text analysis"
+author: "Haziq Jamil"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(quanteda)
+library(ggplot2)
+library(ggrepel)
+```
+
+## Loading the first text file
+
+```{r}
+# require(readtext)
+# data_char_mobydick <- texts(readtext("http://www.gutenberg.org/cache/epub/2701/pg2701.txt"))
+summary(data_char_mobydick)
+```
+
+`readtext()` loads the text and places it inside a structured, intermediate object known as a `corpusSource` object. We can access the text from a `corpusSource` object using the `text()` method. Use `substring()` to show the first `n` characters:
+
+```{r}
+substring(data_char_mobydick, 1, 1)
+substring(data_char_mobydick, 1, 2)
+substring(data_char_mobydick, 1, 3)
+substring(data_char_mobydick, 1, 10)
+substring(data_char_mobydick, 1, 100)
+```
+## Separate content from metadata
+
+The Gutenburg edition of the text contains some metadata before and after the text of the novel. The code below uses the `regexec` and `substring` functions to separate this from the text.
+
+```{r}
+# Find the index for which the first chapter begins. This is actually the nth 
+# character.
+(endMetadataIndex <- regexec("CHAPTER 1. Loomings.", data_char_mobydick)[[1]])
+
+# Then everything before this is the metadata.
+metadata.v <- substring(data_char_mobydick, 1, endMetadataIndex - 1)
+```
+
+To trim the extra text at the end of the Gutenburg version of the text, we can use the keyword-in-context (`kwic`) function to view the contexts around the word 'orphan', which we know should occur at the end of the book. 'orphan' is the final word of the book.
+
+```{r}
+# verify that "orphan" is the end of the novel
+kwic(data_char_mobydick, "orphan")
+```
+
+```{r}
+# extract the novel -- a better way
+novel.v <- substring(data_char_mobydick, 
+                     regexec("CHAPTER 1. Loomings.", data_char_mobydick)[[1]],
+                     regexec("End of Project Gutenberg's Moby Dick.", data_char_mobydick)[[1]] - 1)
+substring(novel.v, 1, 100)
+```
+
+## Reprocessing the content
+
+We begin processing the text by converting to lower case. `quanteda`’s `tolower` functions work like the built-in `tolower`, with an extra option to preserve upper-case acronyms when detected. For `character` objects, we use `char_tolower()`:
+
+```{r}
+# lowercase
+novel.lower.v <- char_tolower(novel.v)
+substring(novel.lower.v, 1, 100)
+```
+
+`quanteda`’s tokens function splits the text into words, with many options available for which characters should be preserved, and which should be used to define word boundaries. The default behaviour works similarly to splitting on the regular expression for word boundary (`\W`), but does not treat apostrophes as word boundaries. This means that ’s and ’t are not treated as whole words from possessive forms and contractions.
+
+```{r}
+# tokenize
+moby.word.v <- as.character(tokens(novel.lower.v, removePunct = TRUE))
+length(moby.word.v)
+total.length <- length(moby.word.v)
+str(moby.word.v)
+moby.word.v[1:20]
+head(which(moby.word.v == "whale"))
+```
+
+## Beginning the analysis
+
+The code below uses the tokenized text to the occurrence of the word whale. To include the possessive form whale’s, we may sum the counts of both forms, count the keyword-in-context matches by regular expression or glob. A glob is a simple wildcard matching pattern common on Unix systems – asterisks match zero or more characters. `quanteda`’s tokenize function separates punctuation into tokens by default. To match the counts in the book, we can choose to remove the punctuation. Punctuations include things like . , ; etc.
+
+```{r}
+moby.word.v <- as.character(tokens(novel.lower.v, removePunct = FALSE))
+# count of the word 'whale'
+length(moby.word.v[which(moby.word.v == "whale")])
+# same thing using kwic()
+nrow(kwic(novel.lower.v, "whale"))
+
+# total occurrences of 'whale' including possessive
+length(moby.word.v[which(moby.word.v == "whale")]) + length(moby.word.v[which(moby.word.v == "whale's")])
+# same thing using kwic()
+(total.whale.hits <- nrow(kwic(novel.lower.v, "^whale('s){0,1}$", valuetype = 'regex')))
+
+nrow(kwic(novel.lower.v, "whale*")) # includes words like 'whalemen'
+```
+
+What fraction of the total words in the novel are ‘whale’?
+
+```{r}
+total.whale.hits / ntoken(novel.lower.v, removePunct = TRUE)  
+```
+
+Calculating the size of the vocabulary - includes possessive forms.
+
+```{r}
+# total unique words
+length(unique(moby.word.v))
+ntype(char_tolower(novel.v), removePunct = FALSE)  # same
+ntype(char_tolower(novel.v), removePunct = TRUE)  # without punctuations
+```
+
+To quickly sort the word types by their frequency, we can use the `dfm()` command to create a matrix of counts of each word type – a document-frequency matrix. In this case there is only one document, the entire book.
+
+```{r}
+# ten most frequent words
+mobyDfm <- dfm(novel.lower.v)
+mobyDfm[, "whale"]
+topfeatures(mobyDfm, 20)
+plot(topfeatures(mobyDfm, 100), log = "y", cex = .6, ylab = "Term frequency")
+```
+
+```{r}
+mobyDfm <- dfm(char_tolower(novel.v), removePunct = TRUE)
+dat <- data.frame(frequency = topfeatures(mobyDfm, 100), index = 1:100)
+ggplot(as.data.frame(dat), aes(y = frequency, x = index)) +
+  geom_point() + 
+  geom_text_repel(aes(label = ifelse(index < 10 | index == which(rownames(dat) == "whale"), rownames(dat), "")),
+                  box.padding = unit(0.6, 'lines'))
+```
+
+## Accessing and comparing word frequency data
+
+### Accessing word data
+
+We can query the document-frequency matrix to retrieve word frequencies, as with a normal matrix:
+
+```{r}
+mobyDfm <- dfm(novel.lower.v)
+# frequencies of 'he' and 'she' - these are matrixes, not numerics
+mobyDfm[, c("he", "she", "him", "her")]
+mobyDfm[, "her"]
+mobyDfm[, "him"] / mobyDfm[, "her"]
+```
+
+### Recycling
+
+```{r}
+mobyDfmPct <- dfm_weight(mobyDfm, "relFreq") * 100
+mobyDfmPct[, "the"]
+topfeatures(mobyDfmPct)
+```
+
+```{r}
+dat <- data.frame(percentage = topfeatures(mobyDfmPct), index = 1:10)
+ggplot(dat, aes(x = index, y = percentage)) + 
+  geom_text(aes(label = rownames(dat))) +
+  geom_label_repel(aes(label = paste0(round(percentage, 2), "%")),
+                   box.padding = unit(0.1, 'lines'),
+                   point.padding = unit(1.2, 'lines'))
+```
+
+## Token distribution analysis
+
+### Dispersion plots
+
+A dispersion plot allows us to visualize the occurrences of particular terms throughout the text. The object returned by the `kwic` function can be plotted to display a dispersion plot.
+
+```{r, fig.height = 2}
+# using words from tokenized corpus for dispersion
+textplot_xray(kwic(novel.v, "whale"))
+```
+
+You can also pass multiple `kwic` objects to plot to compare the dispersion of different terms:
+
+```{r}
+textplot_xray(
+     kwic(novel.v, "whale"),
+     kwic(novel.v, "Ahab"),
+     kwic(novel.v, "Pequod")
+)
+```
+
+### Identifying chapter breaks
+
+Splitting the text into chapters means that we will have a collection of documents, which makes this a good time to make a `corpus` object to hold the texts. Initially, we make a single-document corpus, and then use the `char_segment` function to split this by the string which specifies the chapter breaks.
+
+```{r}
+head(kwic(novel.v, 'chapter'))  # note that this doesn't exactly split the book into the correct chapters, since the word "chapter" also appears in the text itself.
+```
+
+```{r}
+# Find Chapter xxx where xxx is digit
+chaptersVec <- unlist(char_segment(novel.v, what = 'other', 
+                                   delimiter = "CHAPTER\\s\\d", perl = TRUE))
+chaptersLowerVec <- char_tolower(chaptersVec)
+chaptersCorp <- corpus(chaptersVec)
+# Now the book is arranged as follows: Corpus (The main thing) -> Documents (Chapters) -> Types, Tokens and Sentences (The text of the chapters).
+```
+
+With the corpus split into chapters, we can use the dfm command to create a matrix of counts of each word in each chapter – a document-frequency matrix.
+
+```{r}
+chapDfm <- dfm(chaptersCorp)
+# barplot(as.numeric(chapDfm[, 'whale']))  # easier
+dat <- data.frame(frequency = as.numeric(chapDfm[, 'whale']),
+                  chapter = 1:ndoc(chaptersCorp))
+ggplot(dat, aes(x = chapter, y = frequency)) +
+  geom_bar(stat = "identity") +
+  geom_text_repel(
+    aes(label = ifelse(frequency > 25, paste("Chapter", 1:ndoc(chaptersCorp)), "")),
+    box.padding = unit(1, 'lines'), point.padding = unit(1.2, 'lines')
+  )
+```
+
+The above plots are raw frequency plots. For relative frequency plots, (word count divided by the length of the chapter) we can weight the document-frequency matrix. To obtain expected word frequency per 100 words, we multiply by 100. To get a feel for what the resulting weighted dfm (document feature matrix) looks like, you can inspect it with the `head` function, which prints the first few rows and columns.
+
+```{r}
+relDfm <- dfm_weight(chapDfm, type = 'relFreq') * 100
+head(relDfm)
+barplot(as.numeric(relDfm[, 'whale']))
+```
+
+## Correlation
+
+### Correlation analysis
+
+The `dfm` function constructs a matrix which contains zeroes (rather than NAs) for words that do not occur in a chapter, so there’s no need to manually convert NAs. We can compute the individual correlation or the correlation for a matrix of the two columns.
+
+```{r}
+# Correlation
+wf <- as.numeric(relDfm[, 'whale'])
+af <- as.numeric(relDfm[, 'ahab'])
+cor(wf, af)
+
+# Correlation matrix
+waDfm <- cbind(relDfm[, 'whale'], relDfm[, 'ahab'])
+cor(as.matrix(waDfm))
+```
+
+With the ahab frequency and whale frequency vectors extracted from the dfm, it is easy to calculate the significance of the correlation.
+
+```{r}
+samples <- replicate(1000, cor(sample(af), sample(wf)))
+
+h <- hist(
+  samples, breaks = 100, col = "grey",
+  xlab = "Correlation Coefficient",
+  main = "Histogram of Random Correlation Coefficients\n with Normal Curve", 
+  plot = TRUE
+)
+xfit <- seq(min(samples), max(samples), length = 1000)
+yfit <- dnorm(xfit, mean = mean(samples), sd = sd(samples))
+yfit <- yfit * diff(h$mids[1:2]) * length(samples)
+lines(xfit, yfit, col = "black", lwd = 2)
+
+cor.test(wf, af)
+```
+
+## Measures of Lexical variety
+
+### Mean word frequency
+
+The mean word frequency for a particular chapter can be calculated simply with the dfm. Each row is a document (chapter), so, for example, the mean word frequency of the first chapter is the sum of the first row of the matrix, divided by the number of word types in the first chapter. To get the number of word types in the first chapter only, we can either exclude words in that row which have a frequency of zero, or use the ntype function on the first document in the corpus to achieve the same result.
+
+```{r}
+head(chapDfm[1,])
+firstChap <- as.matrix(chapDfm[1,])
+dim(firstChap)
+firstChap[, 1:20]
+
+(numWords <- length(firstChap[firstChap > 0]))  # number of unique words
+sum(chapDfm[1,]) / numWords  # mean word frequency
+sum(chapDfm[1,]) / ntype(chaptersCorp[1], removePunct = FALSE)  # same, but not...
+sum(chapDfm[1,]) / ntype(chaptersCorp[1], removePunct = TRUE)
+```
+
+### Word usage means
+
+Calculate the mean word usage, i.e. the total number of words in each chapter divided by the unique number of words used.
+
+```{r}
+chapMeans <- Matrix::rowMeans(chapDfm)
+plot(chapMeans, type = "h")
+```
+
+## Wordcloud
+
+Plotting a `dfm` object will create a wordcloud using the `wordcloud` pacakge.
+
+```{r}
+mobyDfm <- dfm(char_tolower(novel.v), removePunct = TRUE)
+# Some words will not fit on a plot this size, so suppress those warings
+textplot_wordcloud(dfm_trim(mobyDfm, min_count = 50, verbose = FALSE))
+```
+```{r}
+chapone <- dfm(chaptersCorp[1], removePunct = TRUE, remove = stopwords())
+# removethis <- match( c("the", "to", "of", "and", "a", "that", "as", "i", "is", "in", "it", "there"), colnames(chapone))
+# chapone <- chapone[, -removethis]
+textplot_wordcloud(chapone)
+```
