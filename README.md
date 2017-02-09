@@ -36,9 +36,9 @@ Things to do
 
 Where relevant, these will be linked to the issues section.
 
-1.  Automatic data retrieval and pre-processing.
+1.  Automatic data retrieval and pre-processing. See \#2.
 2.  Decide on methodology(ies). If using supervised learning, need subject matter experts to help rank texts.
-3.  Compile a list of relevant Malay stop words.
+3.  Compile a list of relevant Malay stop words. See \#1.
 
 Example using data from one session meeting
 -------------------------------------------
@@ -127,7 +127,7 @@ summary(speechCorp)
     ##                                                        Yang Berhormat Yang Di-Pertua
     ## 
     ## Source:  /Users/haziqjamil/Desktop/GitHub/mmn/* on x86_64 by haziqjamil
-    ## Created: Thu Feb  9 12:00:48 2017
+    ## Created: Thu Feb  9 12:11:24 2017
     ## Notes:
 
 For our purposes,

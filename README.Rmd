@@ -43,9 +43,9 @@ Whatever the analysis, it is important to note that we have data over time, and 
 
 Where relevant, these will be linked to the issues section.
 
-1. Automatic data retrieval and pre-processing.
+1. Automatic data retrieval and pre-processing. See #2.
 2. Decide on methodology(ies). If using supervised learning, need subject matter experts to help rank texts.
-3. Compile a list of relevant Malay stop words.
+3. Compile a list of relevant Malay stop words. See #1.
 
 ## Example using data from one session meeting
 
